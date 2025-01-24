@@ -32,38 +32,27 @@ OR OTHER DEALINGS IN THE SOFTWARE.
     #include "Arduino.h"
 #endif
 
-#define CH1PIN  25
-#define CH2PIN  26
-#define CH3PIN  27
-#define CH4PIN  32
-#define CH5PIN  33
-#define CH6PIN  34
+#define BT0PIN          10
+#define BT1PIN          11
+#define BT2PIN          12
+#define BT3PIN          13
 
-class RadioController {
-private: 
-    // Internal variables
-    unsigned long ch1Initial{}, ch1End{}, ch2End{}, ch3End{}, ch4End{}, ch5End{}, ch6End{};
-    unsigned long ch1Value{}, ch2Value{}, ch3Value{};
-    bool ch4Value{}, ch5Value{}, ch6Value{};
+class buttonPad {
+private:
+    bool stateButton0{false}, stateButton1{false}, stateButton2{false}, stateButton3{false};
 
-    // Interrupt methods
-    void IRAM_ATTR ch1INTRR();
-    void IRAM_ATTR ch2INTRR();
-    void IRAM_ATTR ch3INTRR();
-    void IRAM_ATTR ch4INTRR();
-    void IRAM_ATTR ch5INTRR();
-    void IRAM_ATTR ch6INTRR();
+    // Button interrupts
+    void IRAM_ATTR bt0INTRR();
+    void IRAM_ATTR bt1INTRR();
+    void IRAM_ATTR bt2INTRR();
+    void IRAM_ATTR bt3INTRR();
+
 public:
     void begin();
 
     // Getters
-    int getCH1Value() { return ch1Value; }
-    int getCH2Value() { return ch2Value; }
-    int getCH3Value() { return ch3Value; }
-    bool getCH4Value() { return ch4Value; }
-    bool getCH5Value() { return ch5Value; }
-    bool getCH6Value() { return ch6Value; }
+    bool getStateButton0() { return stateButton0; }
+    bool getStateButton1() { return stateButton1; }
+    bool getStateButton2() { return stateButton2; }
+    bool getStateButton3() { return stateButton3; }
 };
-
-
-

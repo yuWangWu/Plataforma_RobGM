@@ -1,7 +1,56 @@
-#include <Arduino.h>
-#include <RadioController.h>
-#include "RoboClaw.h"
-#include "Dynamixel2Arduino.h"
+/*
+Copyright (c) 2024 Yu Wang Wu
+
+Permission is hereby granted, free of charge, to any 
+person obtaining a copy of this software and associated 
+documentation files (the "Software"), to deal in the 
+Software without restriction, including without 
+limitation the rights to use, copy, modify, merge, 
+publish, distribute, sublicense, and/or sell copies 
+of the Software, and to permit persons to whom the 
+Software is furnished to do so, subject to the 
+following conditions:
+
+The above copyright notice and this permission 
+notice shall be included in all copies or 
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY 
+OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT 
+LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND 
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS 
+OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT 
+OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE 
+OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#ifndef ARDUINO_H
+#define ARDUINO_H
+  #include <Arduino.h>
+#endif
+
+#ifndef RADIO_CONTROLLER_H
+#define RADIO_CONTROLLER_H
+  #include <RadioController.h>
+#endif
+
+#ifndef PANEL_H
+#define PANEL_H
+  #include <Panel.h>
+#endif
+
+#ifndef ROBOCLAW_H
+#define ROBOCLAW_H
+  #include "RoboClaw.h"
+#endif
+
+#ifndef DYNAMIXEL_H
+#define DYNAMIXEL_H
+  #include "Dynamixel2Arduino.h"
+#endif
 
 #define RBCLW_BAUDRATE  115200
 #define RBCLW_RXPIN     16
@@ -15,20 +64,26 @@
 #define DXL_DIR         22
 #define DXL_ID          3
 
-RadioController RC;
+RadioController rc;
+Panel frontPanel;
 RoboClaw roboclaw1(&Serial2, 10000);
 RoboClaw roboclaw2(&Serial2, 10000);
 Dynamixel2Arduino servo(Serial1, DXL_DIR);
 
-float direccion{}, sentido{}, rpmServo{};
-float motorIzq{}, motorDer{};
+float horizontal{}, vertical{}, servoRPM{};
+float motorLeftSide{}, motorRightSide{};
 
 void setup() {
+  // Comunications
   Serial.begin(115200);
   Serial1.begin(DXL_BAUDRATE, SERIAL_8N1, DXL_RX, DXL_TX);
   Serial2.begin(RBCLW_BAUDRATE, SERIAL_8N1, RBCLW_RXPIN, RBCLW_TXPIN);
 
-  RC.begin();
+  // Components
+  rc.begin();
+  frontPanel.begin();
+
+  // ToDo: Physical component check goes here...
 
   servo.begin(1000000);
   servo.setPortProtocolVersion(2.0);
@@ -39,24 +94,32 @@ void setup() {
 }
 
 void loop() {
-  if (RC.getCH5Value()) {
-    direccion = map(RC.getCH1Value(), 700, 1800, 100, -100);
-    sentido = map(RC.getCH2Value(), 700, 1800, -100, 100);
-    rpmServo = map(RC.getCH3Value(), 1100, 1900, 0, 30);
+  // Front interface button actions
+  if (frontPanel.getButton0()) frontPanel.menuPrev();
+  if (frontPanel.getButton1()) frontPanel.menuNext();
 
-    motorIzq = (direccion + sentido) / 200 * 127;
-    motorDer = (direccion - sentido) / 200 * 127;
+  // Front interface screen update
+  frontPanel.displayUpdate(rc.getCH5Value(), horizontal, vertical, servoRPM);
 
-    if (motorIzq > 0) roboclaw1.ForwardM2(RBCLW1_DIR, motorIzq);
-    else roboclaw1.BackwardM2(RBCLW1_DIR, -motorIzq);
-    if (motorDer > 0) roboclaw1.ForwardM1(RBCLW1_DIR, motorDer);
-    else roboclaw1.BackwardM1(RBCLW1_DIR, -motorDer);
-    if (motorIzq > 0) roboclaw2.ForwardM1(RBCLW2_DIR, motorIzq);
-    else roboclaw2.BackwardM1(RBCLW2_DIR, -motorIzq);
-    if (motorDer > 0) roboclaw2.ForwardM2(RBCLW2_DIR, motorDer);
-    else roboclaw2.BackwardM2(RBCLW2_DIR, -motorDer);
+  // Movement 
+  if (rc.getCH5Value()) {
+    horizontal = map(rc.getCH1Value(), 700, 1800, 100, -100);
+    vertical = map(rc.getCH2Value(), 700, 1800, -100, 100);
+    servoRPM = map(rc.getCH3Value(), 1100, 1900, 0, 30);
 
-    servo.setGoalVelocity(DXL_ID, rpmServo, UNIT_RPM);
+    motorLeftSide = (horizontal + vertical) / 200 * 127;
+    motorRightSide = (horizontal - vertical) / 200 * 127;
+
+    if (motorLeftSide > 0) roboclaw1.ForwardM2(RBCLW1_DIR, motorLeftSide);
+    else roboclaw1.BackwardM2(RBCLW1_DIR, -motorLeftSide);
+    if (motorRightSide > 0) roboclaw1.ForwardM1(RBCLW1_DIR, motorRightSide);
+    else roboclaw1.BackwardM1(RBCLW1_DIR, -motorRightSide);
+    if (motorLeftSide > 0) roboclaw2.ForwardM1(RBCLW2_DIR, motorLeftSide);
+    else roboclaw2.BackwardM1(RBCLW2_DIR, -motorLeftSide);
+    if (motorRightSide > 0) roboclaw2.ForwardM2(RBCLW2_DIR, motorRightSide);
+    else roboclaw2.BackwardM2(RBCLW2_DIR, -motorRightSide);
+
+    servo.setGoalVelocity(DXL_ID, servoRPM, UNIT_RPM);
   } 
   else {
     roboclaw1.ForwardM1(RBCLW1_DIR, 0);

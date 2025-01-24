@@ -27,43 +27,28 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef ARDUINO_H
-#define ARDUINO_H
-    #include "Arduino.h"
-#endif
+#include "buttonPad.h"
+#include "FunctionalInterrupt.h"
 
-#define CH1PIN  25
-#define CH2PIN  26
-#define CH3PIN  27
-#define CH4PIN  32
-#define CH5PIN  33
-#define CH6PIN  34
+void IRAM_ATTR buttonPad::bt0INTRR() {
+    stateButton0 = true;
+}
 
-class RadioController {
-private: 
-    // Internal variables
-    unsigned long ch1Initial{}, ch1End{}, ch2End{}, ch3End{}, ch4End{}, ch5End{}, ch6End{};
-    unsigned long ch1Value{}, ch2Value{}, ch3Value{};
-    bool ch4Value{}, ch5Value{}, ch6Value{};
+void IRAM_ATTR buttonPad::bt1INTRR() {
+    stateButton1 = true;
+}
 
-    // Interrupt methods
-    void IRAM_ATTR ch1INTRR();
-    void IRAM_ATTR ch2INTRR();
-    void IRAM_ATTR ch3INTRR();
-    void IRAM_ATTR ch4INTRR();
-    void IRAM_ATTR ch5INTRR();
-    void IRAM_ATTR ch6INTRR();
-public:
-    void begin();
+void IRAM_ATTR buttonPad::bt2INTRR() {
+    stateButton2 = true;
+}
 
-    // Getters
-    int getCH1Value() { return ch1Value; }
-    int getCH2Value() { return ch2Value; }
-    int getCH3Value() { return ch3Value; }
-    bool getCH4Value() { return ch4Value; }
-    bool getCH5Value() { return ch5Value; }
-    bool getCH6Value() { return ch6Value; }
-};
+void IRAM_ATTR buttonPad::bt3INTRR() {
+    stateButton3 = true;
+}
 
-
-
+void buttonPad::begin() {
+    attachInterrupt(digitalPinToInterrupt(BT0PIN), std::bind(&buttonPad::bt0INTRR, this), FALLING);
+    attachInterrupt(digitalPinToInterrupt(BT1PIN), std::bind(&buttonPad::bt1INTRR, this), FALLING);
+    attachInterrupt(digitalPinToInterrupt(BT2PIN), std::bind(&buttonPad::bt2INTRR, this), FALLING);
+    attachInterrupt(digitalPinToInterrupt(BT3PIN), std::bind(&buttonPad::bt3INTRR, this), FALLING);
+}

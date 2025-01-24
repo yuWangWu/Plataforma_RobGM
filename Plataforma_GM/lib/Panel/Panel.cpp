@@ -27,43 +27,42 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef ARDUINO_H
-#define ARDUINO_H
-    #include "Arduino.h"
-#endif
+#include "Panel.h"
 
-#define CH1PIN  25
-#define CH2PIN  26
-#define CH3PIN  27
-#define CH4PIN  32
-#define CH5PIN  33
-#define CH6PIN  34
+void Panel::begin() {
+    buttons.begin();
+    Wire.begin(I2C_SDA, I2C_SCK);
+    oled.begin();
+    oled.titleAndBottom("Initializing", "Please wait...");
+}
 
-class RadioController {
-private: 
-    // Internal variables
-    unsigned long ch1Initial{}, ch1End{}, ch2End{}, ch3End{}, ch4End{}, ch5End{}, ch6End{};
-    unsigned long ch1Value{}, ch2Value{}, ch3Value{};
-    bool ch4Value{}, ch5Value{}, ch6Value{};
+void Panel::menuNext() {
+    if (currentMenu < maxMenu) currentMenu++;
+    else currentMenu = 0;
+}
 
-    // Interrupt methods
-    void IRAM_ATTR ch1INTRR();
-    void IRAM_ATTR ch2INTRR();
-    void IRAM_ATTR ch3INTRR();
-    void IRAM_ATTR ch4INTRR();
-    void IRAM_ATTR ch5INTRR();
-    void IRAM_ATTR ch6INTRR();
-public:
-    void begin();
+void Panel::menuPrev() {
+    if (currentMenu > 0) currentMenu--;
+    else currentMenu = maxMenu;
+}
 
-    // Getters
-    int getCH1Value() { return ch1Value; }
-    int getCH2Value() { return ch2Value; }
-    int getCH3Value() { return ch3Value; }
-    bool getCH4Value() { return ch4Value; }
-    bool getCH5Value() { return ch5Value; }
-    bool getCH6Value() { return ch6Value; }
-};
+void Panel::displayUpdate(bool ctlMode, float &leftVel, float &rightVel, float &dxlRPM) {
+    switch (currentMenu) { 
+        case 0:
+            if (ctlMode) oled.titleAndBottom("Mode:", "RC Controller");
+            else oled.titleAndBottom("Mode:", "Serial");
+            break;
 
+        case 1:
+            oled.titleAndBottom("Left Speed:", leftVel);
+            break;
 
+        case 2:
+            oled.titleAndBottom("Right Speed:", rightVel);
+            break;
 
+        case 3:
+            oled.titleAndBottom("DXL RPM", dxlRPM);
+            break;
+    }
+}

@@ -32,38 +32,42 @@ OR OTHER DEALINGS IN THE SOFTWARE.
     #include "Arduino.h"
 #endif
 
-#define CH1PIN  25
-#define CH2PIN  26
-#define CH3PIN  27
-#define CH4PIN  32
-#define CH5PIN  33
-#define CH6PIN  34
+#ifndef BUTTON_PAD_H
+#define BUTTON_PAD_H
+    #include "buttonPad.h"
+#endif
 
-class RadioController {
-private: 
-    // Internal variables
-    unsigned long ch1Initial{}, ch1End{}, ch2End{}, ch3End{}, ch4End{}, ch5End{}, ch6End{};
-    unsigned long ch1Value{}, ch2Value{}, ch3Value{};
-    bool ch4Value{}, ch5Value{}, ch6Value{};
+#ifndef SCREEN_H
+#define SCREEN_H
+    #include "Screen.h"
+#endif
 
-    // Interrupt methods
-    void IRAM_ATTR ch1INTRR();
-    void IRAM_ATTR ch2INTRR();
-    void IRAM_ATTR ch3INTRR();
-    void IRAM_ATTR ch4INTRR();
-    void IRAM_ATTR ch5INTRR();
-    void IRAM_ATTR ch6INTRR();
+#define I2C_SDA         22
+#define I2C_SCK         21
+
+#define OLED_WIDTH      128
+#define OLED_HEIGHT     32
+#define OLED_ADR        0x3C
+
+#define MENU_QUANTITY   3       // = NUMBER OF MENUS - 1
+
+class Panel {
+private:
+    buttonPad buttons;
+    uint8_t currentMenu, maxMenu;
+    Screen oled{OLED_WIDTH, OLED_HEIGHT, OLED_ADR};
+
 public:
+    Panel() : currentMenu(0), maxMenu(MENU_QUANTITY) {};
+
     void begin();
 
-    // Getters
-    int getCH1Value() { return ch1Value; }
-    int getCH2Value() { return ch2Value; }
-    int getCH3Value() { return ch3Value; }
-    bool getCH4Value() { return ch4Value; }
-    bool getCH5Value() { return ch5Value; }
-    bool getCH6Value() { return ch6Value; }
+    void menuNext();
+    void menuPrev();
+    void displayUpdate(bool ctlMode, float &leftVel, float &rightVel, float &dxlRPM);
+
+    bool getButton0() { return buttons.getStateButton0(); };
+    bool getButton1() { return buttons.getStateButton1(); };
+    bool getButton2() { return buttons.getStateButton2(); };
+    bool getButton3() { return buttons.getStateButton3(); };
 };
-
-
-
