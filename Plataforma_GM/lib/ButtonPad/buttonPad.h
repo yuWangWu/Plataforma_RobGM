@@ -32,10 +32,10 @@ OR OTHER DEALINGS IN THE SOFTWARE.
     #include "Arduino.h"
 #endif
 
-#define BT0PIN          10
-#define BT1PIN          11
-#define BT2PIN          12
-#define BT3PIN          13
+#define BT0PIN          16
+#define BT1PIN          4
+#define BT2PIN          18
+#define BT3PIN          19
 
 class buttonPad {
 private:
@@ -49,6 +49,12 @@ private:
 
 public:
     void begin();
+
+    // Setters
+    void setStateButton0(bool value) { stateButton0 = value; }
+    void setStateButton1(bool value) { stateButton1 = value; }
+    void setStateButton2(bool value) { stateButton2 = value; }
+    void setStateButton3(bool value) { stateButton3 = value; }
 
     // Getters
     bool getStateButton0() { return stateButton0; }

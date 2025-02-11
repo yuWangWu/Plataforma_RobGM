@@ -52,17 +52,34 @@ OR OTHER DEALINGS IN THE SOFTWARE.
   #include "Dynamixel2Arduino.h"
 #endif
 
+// Parameters and pins
+#define HB_TIM_CH       1
+#define HB_TIM_DIV      40
+#define HB_LED1         12
+#define HB_LED2         14
+
 #define RBCLW_BAUDRATE  115200
-#define RBCLW_RXPIN     16
-#define RBCLW_TXPIN     17
+#define RBCLW_RXPIN     13
+#define RBCLW_TXPIN     15
 #define RBCLW1_DIR      135
 #define RBCLW2_DIR      128
 
 #define DXL_BAUDRATE    1000000
-#define DXL_RX          18
-#define DXL_TX          19
-#define DXL_DIR         22
+#define DXL_RX          23
+#define DXL_TX          22
+#define DXL_DIR         21
 #define DXL_ID          3
+
+#define OLED_WIDTH      128
+#define OLED_HEIGHT     32
+#define OLED_ADR        0x3C
+
+// Heartbeat stuff
+hw_timer_t *heartbeatTim = NULL;
+volatile bool hbState{false};
+void IRAM_ATTR hb_beat() {
+  hbState = true;
+}
 
 RadioController rc;
 Panel frontPanel;
@@ -74,10 +91,21 @@ float horizontal{}, vertical{}, servoRPM{};
 float motorLeftSide{}, motorRightSide{};
 
 void setup() {
+  // Heartbeat
+  pinMode(HB_LED1, OUTPUT);
+  pinMode(HB_LED2, OUTPUT);
+  heartbeatTim = timerBegin(1, 80, true);
+  timerAttachInterrupt(heartbeatTim, &hb_beat, true);
+  timerAlarmWrite(heartbeatTim, 2000000, true);
+  timerAlarmEnable(heartbeatTim);
+
   // Comunications
   Serial.begin(115200);
   Serial1.begin(DXL_BAUDRATE, SERIAL_8N1, DXL_RX, DXL_TX);
   Serial2.begin(RBCLW_BAUDRATE, SERIAL_8N1, RBCLW_RXPIN, RBCLW_TXPIN);
+  Wire.begin(I2C_SDA, I2C_SCK);
+
+  Serial.println("Communications active");
 
   // Components
   rc.begin();
@@ -94,9 +122,24 @@ void setup() {
 }
 
 void loop() {
+  // Heartbeat update
+  if (hbState) {
+    digitalWrite(HB_LED2, !digitalRead(HB_LED2));
+    digitalWrite(HB_LED1, !digitalRead(HB_LED2));
+    hbState = false;
+  }
+
   // Front interface button actions
-  if (frontPanel.getButton0()) frontPanel.menuPrev();
-  if (frontPanel.getButton1()) frontPanel.menuNext();
+  if (frontPanel.getButton0()) { 
+    Serial.println("Event on Button 0");
+    frontPanel.menuPrev();
+    frontPanel.resetButton0();
+  }
+  if (frontPanel.getButton1()) { 
+    Serial.println("Event on Button 1");
+    frontPanel.menuNext();
+    frontPanel.resetButton1();
+  }
 
   // Front interface screen update
   frontPanel.displayUpdate(rc.getCH5Value(), horizontal, vertical, servoRPM);

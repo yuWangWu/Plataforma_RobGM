@@ -28,7 +28,11 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "RadioController.h"
-#include "FunctionalInterrupt.h"
+
+#ifndef FUNCTIONAL_INTERRUPT_H
+#define FUNCTIONAL_INTERRUPT_H
+    #include "FunctionalInterrupt.h"
+#endif
 
 void RadioController::begin() {
     pinMode(CH1PIN, INPUT_PULLUP);

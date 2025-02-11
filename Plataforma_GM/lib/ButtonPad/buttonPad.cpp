@@ -28,7 +28,18 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "buttonPad.h"
-#include "FunctionalInterrupt.h"
+
+#ifndef FUNCTIONAL_INTERRUPT_H
+#define FUNCTIONAL_INTERRUPT_H
+    #include "FunctionalInterrupt.h"
+#endif
+
+void buttonPad::begin() {
+    attachInterrupt(digitalPinToInterrupt(BT0PIN), std::bind(&buttonPad::bt0INTRR, this), FALLING);
+    attachInterrupt(digitalPinToInterrupt(BT1PIN), std::bind(&buttonPad::bt1INTRR, this), FALLING);
+    attachInterrupt(digitalPinToInterrupt(BT2PIN), std::bind(&buttonPad::bt2INTRR, this), FALLING);
+    attachInterrupt(digitalPinToInterrupt(BT3PIN), std::bind(&buttonPad::bt3INTRR, this), FALLING);
+}
 
 void IRAM_ATTR buttonPad::bt0INTRR() {
     stateButton0 = true;
@@ -44,11 +55,4 @@ void IRAM_ATTR buttonPad::bt2INTRR() {
 
 void IRAM_ATTR buttonPad::bt3INTRR() {
     stateButton3 = true;
-}
-
-void buttonPad::begin() {
-    attachInterrupt(digitalPinToInterrupt(BT0PIN), std::bind(&buttonPad::bt0INTRR, this), FALLING);
-    attachInterrupt(digitalPinToInterrupt(BT1PIN), std::bind(&buttonPad::bt1INTRR, this), FALLING);
-    attachInterrupt(digitalPinToInterrupt(BT2PIN), std::bind(&buttonPad::bt2INTRR, this), FALLING);
-    attachInterrupt(digitalPinToInterrupt(BT3PIN), std::bind(&buttonPad::bt3INTRR, this), FALLING);
 }

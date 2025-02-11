@@ -32,18 +32,23 @@ OR OTHER DEALINGS IN THE SOFTWARE.
     #include "Arduino.h"
 #endif
 
+#ifndef SPI_H
+#define SPI_H
+    #include "SPI.h"
+#endif
+
+#ifndef SSD1306WIRE_H
+#define SSD1306WIRE_H
+    #include "SSD1306Wire.h"
+#endif
+
 #ifndef BUTTON_PAD_H
 #define BUTTON_PAD_H
     #include "buttonPad.h"
 #endif
 
-#ifndef SCREEN_H
-#define SCREEN_H
-    #include "Screen.h"
-#endif
-
-#define I2C_SDA         22
-#define I2C_SCK         21
+#define I2C_SDA         5
+#define I2C_SCK         17
 
 #define OLED_WIDTH      128
 #define OLED_HEIGHT     32
@@ -55,19 +60,25 @@ class Panel {
 private:
     buttonPad buttons;
     uint8_t currentMenu, maxMenu;
-    Screen oled{OLED_WIDTH, OLED_HEIGHT, OLED_ADR};
+    SSD1306Wire display;
 
 public:
-    Panel() : currentMenu(0), maxMenu(MENU_QUANTITY) {};
-
+    Panel() : currentMenu(0), maxMenu(MENU_QUANTITY), display(0x3c, I2C_SDA, I2C_SCK) {};
     void begin();
 
+    // Display management 
     void menuNext();
     void menuPrev();
     void displayUpdate(bool ctlMode, float &leftVel, float &rightVel, float &dxlRPM);
 
-    bool getButton0() { return buttons.getStateButton0(); };
-    bool getButton1() { return buttons.getStateButton1(); };
-    bool getButton2() { return buttons.getStateButton2(); };
-    bool getButton3() { return buttons.getStateButton3(); };
+    // Button management
+    void resetButton0() { buttons.setStateButton0(false); }
+    void resetButton1() { buttons.setStateButton1(false); }
+    void resetButton2() { buttons.setStateButton2(false); }
+    void resetButton3() { buttons.setStateButton3(false); }
+
+    bool getButton0() { return buttons.getStateButton0(); }
+    bool getButton1() { return buttons.getStateButton1(); }
+    bool getButton2() { return buttons.getStateButton2(); }
+    bool getButton3() { return buttons.getStateButton3(); }
 };

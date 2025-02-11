@@ -31,38 +31,58 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 
 void Panel::begin() {
     buttons.begin();
-    Wire.begin(I2C_SDA, I2C_SCK);
-    oled.begin();
-    oled.titleAndBottom("Initializing", "Please wait...");
+    display.init();
+    display.flipScreenVertically();
+    display.clear();
+    display.setFont(ArialMT_Plain_24);
+    display.setTextAlignment(TEXT_ALIGN_LEFT);
+    display.println(F("Initializing"));
+    display.print(F("Please wait..."));
+    display.display();
 }
 
 void Panel::menuNext() {
+    Serial.println("Current menu: ");
+    Serial.println(currentMenu);
+
     if (currentMenu < maxMenu) currentMenu++;
     else currentMenu = 0;
+    Serial.println(currentMenu);
 }
 
 void Panel::menuPrev() {
+    Serial.println("Current menu: ");
+    Serial.println(currentMenu);
+    
     if (currentMenu > 0) currentMenu--;
     else currentMenu = maxMenu;
+    Serial.println(currentMenu);
 }
 
 void Panel::displayUpdate(bool ctlMode, float &leftVel, float &rightVel, float &dxlRPM) {
+    display.clear();
+    display.cls();
     switch (currentMenu) { 
         case 0:
-            if (ctlMode) oled.titleAndBottom("Mode:", "RC Controller");
-            else oled.titleAndBottom("Mode:", "Serial");
+            display.println(F("Control:"));
+            if (ctlMode) display.println(F("RC"));
+            else display.println(F("Serial"));
             break;
 
         case 1:
-            oled.titleAndBottom("Left Speed:", leftVel);
+            display.println(F("Left vel:"));
+            display.print(leftVel);
             break;
 
         case 2:
-            oled.titleAndBottom("Right Speed:", rightVel);
+            display.println(F("Right vel:"));
+            display.print(rightVel);
             break;
 
         case 3:
-            oled.titleAndBottom("DXL RPM", dxlRPM);
+            display.println(F("DXL RPM:"));
+            display.print(dxlRPM);
             break;
     }
+    display.display();
 }

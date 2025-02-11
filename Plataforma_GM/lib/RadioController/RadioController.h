@@ -32,27 +32,26 @@ OR OTHER DEALINGS IN THE SOFTWARE.
     #include "Arduino.h"
 #endif
 
-#define CH1PIN  25
-#define CH2PIN  26
-#define CH3PIN  27
-#define CH4PIN  32
+#define CH1PIN  36
+#define CH2PIN  39
+#define CH3PIN  34
+#define CH4PIN  35
 #define CH5PIN  33
-#define CH6PIN  34
+#define CH6PIN  32
 
 class RadioController {
-private: 
-    // Internal variables
+private:
     unsigned long ch1Initial{}, ch1End{}, ch2End{}, ch3End{}, ch4End{}, ch5End{}, ch6End{};
     unsigned long ch1Value{}, ch2Value{}, ch3Value{};
     bool ch4Value{}, ch5Value{}, ch6Value{};
 
-    // Interrupt methods
     void IRAM_ATTR ch1INTRR();
     void IRAM_ATTR ch2INTRR();
     void IRAM_ATTR ch3INTRR();
     void IRAM_ATTR ch4INTRR();
     void IRAM_ATTR ch5INTRR();
     void IRAM_ATTR ch6INTRR();
+    
 public:
     void begin();
 
