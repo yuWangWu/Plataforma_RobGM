@@ -32,8 +32,8 @@ OR OTHER DEALINGS IN THE SOFTWARE.
     #include "Arduino.h"
 #endif
 
-#define BT0PIN          16
-#define BT1PIN          4
+#define BT0PIN          17
+#define BT1PIN          5
 #define BT2PIN          18
 #define BT3PIN          19
 

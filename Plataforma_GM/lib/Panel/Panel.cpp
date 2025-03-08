@@ -59,8 +59,7 @@ void Panel::menuPrev() {
     Serial.println(currentMenu);
 }
 
-void Panel::displayUpdate(bool ctlMode, float &leftVel, float &rightVel, float &dxlRPM) {
-    display.clear();
+void Panel::displayUpdate(const bool ctlMode,const float &leftVel,const float &rightVel,const float &dxlRPM) {
     display.cls();
     switch (currentMenu) { 
         case 0:

@@ -70,15 +70,18 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 #define DXL_DIR         21
 #define DXL_ID          3
 
-#define OLED_WIDTH      128
-#define OLED_HEIGHT     32
-#define OLED_ADR        0x3C
-
 // Heartbeat stuff
 hw_timer_t *heartbeatTim = NULL;
 volatile bool hbState{false};
 void IRAM_ATTR hb_beat() {
   hbState = true;
+}
+
+// Screen TIM
+hw_timer_t *screenTim = NULL;
+volatile bool screenFlag{false};
+void IRAM_ATTR screenRefresh() {
+  screenFlag = true;
 }
 
 RadioController rc;
@@ -106,6 +109,11 @@ void setup() {
   Wire.begin(I2C_SDA, I2C_SCK);
 
   Serial.println("Communications active");
+
+  screenTim = timerBegin(2, 80, true);
+  timerAttachInterrupt(screenTim, &screenRefresh, true);
+  timerAlarmWrite(screenTim, 250000, true);
+  timerAlarmEnable(screenTim);
 
   // Components
   rc.begin();
@@ -142,7 +150,10 @@ void loop() {
   }
 
   // Front interface screen update
-  frontPanel.displayUpdate(rc.getCH5Value(), horizontal, vertical, servoRPM);
+  if (screenFlag) {
+    frontPanel.displayUpdate(rc.getCH5Value(), horizontal, vertical, servoRPM);
+    screenFlag = false;
+  }
 
   // Movement 
   if (rc.getCH5Value()) {

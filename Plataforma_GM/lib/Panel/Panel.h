@@ -47,12 +47,12 @@ OR OTHER DEALINGS IN THE SOFTWARE.
     #include "buttonPad.h"
 #endif
 
-#define I2C_SDA         5
-#define I2C_SCK         17
+#define I2C_SDA         16
+#define I2C_SCK         4
 
 #define OLED_WIDTH      128
-#define OLED_HEIGHT     32
-#define OLED_ADR        0x3C
+#define OLED_HEIGHT     64
+#define OLED_ADR        0x78
 
 #define MENU_QUANTITY   3       // = NUMBER OF MENUS - 1
 
@@ -66,10 +66,10 @@ public:
     Panel() : currentMenu(0), maxMenu(MENU_QUANTITY), display(0x3c, I2C_SDA, I2C_SCK) {};
     void begin();
 
-    // Display management 
+    // Display management
     void menuNext();
     void menuPrev();
-    void displayUpdate(bool ctlMode, float &leftVel, float &rightVel, float &dxlRPM);
+    void displayUpdate(const bool ctlMode,const  float &leftVel,const  float &rightVel,const  float &dxlRPM);
 
     // Button management
     void resetButton0() { buttons.setStateButton0(false); }
