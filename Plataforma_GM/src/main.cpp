@@ -59,8 +59,8 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 #define HB_LED2         14
 
 #define RBCLW_BAUDRATE  115200
-#define RBCLW_RXPIN     13
-#define RBCLW_TXPIN     15
+#define RBCLW_RXPIN     15
+#define RBCLW_TXPIN     13
 #define RBCLW1_DIR      135
 #define RBCLW2_DIR      128
 
@@ -151,12 +151,12 @@ void loop() {
 
   // Front interface screen update
   if (screenFlag) {
-    frontPanel.displayUpdate(rc.getCH5Value(), horizontal, vertical, servoRPM);
+    frontPanel.displayUpdate(rc.getCH4Value(), horizontal, vertical, servoRPM);
     screenFlag = false;
   }
 
-  // Movement 
-  if (rc.getCH5Value()) {
+  // Movement
+  if (rc.getCH4Value()) {
     horizontal = map(rc.getCH1Value(), 700, 1800, 100, -100);
     vertical = map(rc.getCH2Value(), 700, 1800, -100, 100);
     servoRPM = map(rc.getCH3Value(), 1100, 1900, 0, 30);

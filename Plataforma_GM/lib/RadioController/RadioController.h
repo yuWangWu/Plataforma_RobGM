@@ -56,9 +56,9 @@ public:
     void begin();
 
     // Getters
-    int getCH1Value() { return ch1Value; }
-    int getCH2Value() { return ch2Value; }
-    int getCH3Value() { return ch3Value; }
+    unsigned long getCH1Value() { return ch1Value; }
+    unsigned long getCH2Value() { return ch2Value; }
+    unsigned long getCH3Value() { return ch3Value; }
     bool getCH4Value() { return ch4Value; }
     bool getCH5Value() { return ch5Value; }
     bool getCH6Value() { return ch6Value; }
