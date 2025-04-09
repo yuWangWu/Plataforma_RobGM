@@ -31,13 +31,7 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 
 void Panel::begin() {
     buttons.begin();
-    display.init();
-    display.flipScreenVertically();
-    display.clear();
-    display.setFont(ArialMT_Plain_24);
-    display.setTextAlignment(TEXT_ALIGN_LEFT);
-    display.println(F("Initializing"));
-    display.print(F("Please wait..."));
+    if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADR, true, false)) Serial.println("Pantalla no iniciada correctamente.");
     display.display();
 }
 
@@ -60,7 +54,10 @@ void Panel::menuPrev() {
 }
 
 void Panel::displayUpdate(const bool ctlMode,const float &leftVel,const float &rightVel,const float &dxlRPM) {
-    display.cls();
+    display.clearDisplay();
+    display.setTextSize(2);             // Normal 1:1 pixel scale
+    display.setTextColor(SSD1306_WHITE);        // Draw white text
+    display.setCursor(0,0);             // Start at top-left corner
     switch (currentMenu) { 
         case 0:
             display.println(F("Control:"));

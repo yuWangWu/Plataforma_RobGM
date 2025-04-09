@@ -32,14 +32,9 @@ OR OTHER DEALINGS IN THE SOFTWARE.
     #include "Arduino.h"
 #endif
 
-#ifndef SPI_H
-#define SPI_H
-    #include "SPI.h"
-#endif
-
-#ifndef SSD1306WIRE_H
-#define SSD1306WIRE_H
-    #include "SSD1306Wire.h"
+#ifndef ADAFRUIT_SSD1306_H
+#define ADAFRUIT_SSD1306_H
+    #include "Adafruit_SSD1306.h"
 #endif
 
 #ifndef BUTTON_PAD_H
@@ -52,24 +47,26 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define OLED_WIDTH      128
 #define OLED_HEIGHT     64
-#define OLED_ADR        0x78
+#define OLED_ADR        0x3C
 
 #define MENU_QUANTITY   3       // = NUMBER OF MENUS - 1
 
 class Panel {
 private:
     buttonPad buttons;
+    // enum 
     uint8_t currentMenu, maxMenu;
-    SSD1306Wire display;
+    Adafruit_SSD1306 display;
 
 public:
-    Panel() : currentMenu(0), maxMenu(MENU_QUANTITY), display(0x3c, I2C_SDA, I2C_SCK) {};
+    Panel(TwoWire &i2cBus) : currentMenu(0), maxMenu(MENU_QUANTITY), display(OLED_WIDTH, OLED_HEIGHT, &i2cBus, -1) {};
     void begin();
 
     // Display management
     void menuNext();
     void menuPrev();
-    void displayUpdate(const bool ctlMode,const  float &leftVel,const  float &rightVel,const  float &dxlRPM);
+    // sin const en datos basicos
+    void displayUpdate(const bool ctlMode,const float &leftVel,const  float &rightVel,const  float &dxlRPM);
 
     // Button management
     void resetButton0() { buttons.setStateButton0(false); }

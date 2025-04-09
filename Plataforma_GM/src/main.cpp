@@ -32,6 +32,16 @@ OR OTHER DEALINGS IN THE SOFTWARE.
   #include <Arduino.h>
 #endif
 
+#ifndef WIRE_H
+#define WIRE_H
+  #include <Wire.h>
+#endif
+
+#ifndef ADAFRUIT_SSD1306_H
+#define ADARFUIT_SSD1306_H
+  #include <Adafruit_SSD1306.h>
+#endif
+
 #ifndef RADIO_CONTROLLER_H
 #define RADIO_CONTROLLER_H
   #include <RadioController.h>
@@ -71,21 +81,17 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 #define DXL_ID          3
 
 // Heartbeat stuff
-hw_timer_t *heartbeatTim = NULL;
-volatile bool hbState{false};
-void IRAM_ATTR hb_beat() {
-  hbState = true;
-}
+// hw_timer_t *heartbeatTim = NULL;
+// volatile bool hbState{false};
+// void IRAM_ATTR hb_beat() {
+//   hbState = true;
+// }
 
-// Screen TIM
-hw_timer_t *screenTim = NULL;
-volatile bool screenFlag{false};
-void IRAM_ATTR screenRefresh() {
-  screenFlag = true;
-}
+// I2C interface
+TwoWire i2cBus = TwoWire(0);
 
 RadioController rc;
-Panel frontPanel;
+Panel frontPanel(i2cBus);
 RoboClaw roboclaw1(&Serial2, 10000);
 RoboClaw roboclaw2(&Serial2, 10000);
 Dynamixel2Arduino servo(Serial1, DXL_DIR);
@@ -97,23 +103,19 @@ void setup() {
   // Heartbeat
   pinMode(HB_LED1, OUTPUT);
   pinMode(HB_LED2, OUTPUT);
-  heartbeatTim = timerBegin(1, 80, true);
-  timerAttachInterrupt(heartbeatTim, &hb_beat, true);
-  timerAlarmWrite(heartbeatTim, 2000000, true);
-  timerAlarmEnable(heartbeatTim);
+  digitalWrite(HB_LED1, 1);
+  // heartbeatTim = timerBegin(1, 80, true);
+  // timerAttachInterrupt(heartbeatTim, &hb_beat, true);
+  // timerAlarmWrite(heartbeatTim, 2000000, true);
+  // timerAlarmEnable(heartbeatTim);
 
   // Comunications
   Serial.begin(115200);
   Serial1.begin(DXL_BAUDRATE, SERIAL_8N1, DXL_RX, DXL_TX);
   Serial2.begin(RBCLW_BAUDRATE, SERIAL_8N1, RBCLW_RXPIN, RBCLW_TXPIN);
-  Wire.begin(I2C_SDA, I2C_SCK);
+  i2cBus.begin(I2C_SDA, I2C_SCK);
 
   Serial.println("Communications active");
-
-  screenTim = timerBegin(2, 80, true);
-  timerAttachInterrupt(screenTim, &screenRefresh, true);
-  timerAlarmWrite(screenTim, 250000, true);
-  timerAlarmEnable(screenTim);
 
   // Components
   rc.begin();
@@ -130,12 +132,15 @@ void setup() {
 }
 
 void loop() {
+  //change
   // Heartbeat update
-  if (hbState) {
-    digitalWrite(HB_LED2, !digitalRead(HB_LED2));
-    digitalWrite(HB_LED1, !digitalRead(HB_LED2));
-    hbState = false;
-  }
+  // if (hbState) {
+  //   digitalWrite(HB_LED2, !digitalRead(HB_LED2));
+  //   digitalWrite(HB_LED1, !digitalRead(HB_LED2));
+  //   hbState = false;
+  // }
+  digitalWrite(HB_LED1, !digitalRead(HB_LED1));
+  digitalWrite(HB_LED2, !digitalRead(HB_LED1));
 
   // Front interface button actions
   if (frontPanel.getButton0()) { 
@@ -150,10 +155,7 @@ void loop() {
   }
 
   // Front interface screen update
-  if (screenFlag) {
-    frontPanel.displayUpdate(rc.getCH4Value(), horizontal, vertical, servoRPM);
-    screenFlag = false;
-  }
+  frontPanel.displayUpdate(rc.getCH4Value(), horizontal, vertical, servoRPM);
 
   // Movement
   if (rc.getCH4Value()) {
@@ -164,14 +166,20 @@ void loop() {
     motorLeftSide = (horizontal + vertical) / 200 * 127;
     motorRightSide = (horizontal - vertical) / 200 * 127;
 
-    if (motorLeftSide > 0) roboclaw1.ForwardM2(RBCLW1_DIR, motorLeftSide);
-    else roboclaw1.BackwardM2(RBCLW1_DIR, -motorLeftSide);
-    if (motorRightSide > 0) roboclaw1.ForwardM1(RBCLW1_DIR, motorRightSide);
-    else roboclaw1.BackwardM1(RBCLW1_DIR, -motorRightSide);
-    if (motorLeftSide > 0) roboclaw2.ForwardM1(RBCLW2_DIR, motorLeftSide);
-    else roboclaw2.BackwardM1(RBCLW2_DIR, -motorLeftSide);
-    if (motorRightSide > 0) roboclaw2.ForwardM2(RBCLW2_DIR, motorRightSide);
-    else roboclaw2.BackwardM2(RBCLW2_DIR, -motorRightSide);
+    if (motorLeftSide > 0) {
+      roboclaw1.ForwardM2(RBCLW1_DIR, motorLeftSide);
+      roboclaw2.ForwardM1(RBCLW2_DIR, motorLeftSide);
+    } else {
+      roboclaw1.BackwardM2(RBCLW1_DIR, -motorLeftSide);
+      roboclaw2.BackwardM1(RBCLW2_DIR, -motorLeftSide);
+    }
+    if (motorRightSide > 0) {
+      roboclaw1.ForwardM1(RBCLW1_DIR, motorRightSide);
+      roboclaw2.ForwardM2(RBCLW2_DIR, motorRightSide);
+    } else {
+      roboclaw1.BackwardM1(RBCLW1_DIR, -motorRightSide);
+      roboclaw2.BackwardM2(RBCLW2_DIR, -motorRightSide);
+    }
 
     servo.setGoalVelocity(DXL_ID, servoRPM, UNIT_RPM);
   } 
@@ -183,3 +191,11 @@ void loop() {
     servo.setGoalVelocity(DXL_ID, 0, UNIT_RPM);
   }
 }
+
+// lectura de encoders
+// empaquetamiento de los datos 
+// panel: autogestion de botones
+// cargador de bateria
+// condensadores roboclaw
+
+// referencia rosa
