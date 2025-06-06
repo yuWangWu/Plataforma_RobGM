@@ -42,6 +42,9 @@ void RadioController::begin() {
     pinMode(CH5PIN, INPUT_PULLUP);
     pinMode(CH6PIN, INPUT_PULLUP);
 
+    ch1Value = 0; ch2Value = 0; ch3Value = 0;
+    ch4Value = false; ch5Value = false; ch6Value = false;
+
     attachInterrupt(digitalPinToInterrupt(CH1PIN), std::bind(&RadioController::ch1INTRR, this), CHANGE);
     attachInterrupt(digitalPinToInterrupt(CH2PIN), std::bind(&RadioController::ch2INTRR, this), FALLING);
     attachInterrupt(digitalPinToInterrupt(CH3PIN), std::bind(&RadioController::ch3INTRR, this), FALLING);
@@ -52,7 +55,7 @@ void RadioController::begin() {
 
 void IRAM_ATTR RadioController::ch1INTRR() {
     unsigned long actual = micros();
-    if ((actual - ch1Initial) > 3500) {
+    if ((actual - ch1Initial) > chMaxOn) {
         ch1Initial = actual;
     } else {
         ch1End = actual;
@@ -62,25 +65,25 @@ void IRAM_ATTR RadioController::ch1INTRR() {
 
 void IRAM_ATTR RadioController::ch2INTRR() {
     ch2End = micros();
-    ch2Value = ch2End - ch1End - 1;
+    ch2Value = ch2End - ch1End - chDelay;
 }
 
 void IRAM_ATTR RadioController::ch3INTRR() {
     ch3End = micros();
-    ch3Value = ch3End - ch2End - 1;
+    ch3Value = ch3End - ch2End - chDelay;
 }
 
 void IRAM_ATTR RadioController::ch4INTRR() {
     ch4End = micros();
-    ch4Value = (ch4End - ch3End - 1) < 1500 ? false : true;
+    ch4Value = (ch4End - ch3End - chDelay) < chDigitalThreshold ? false : true;
 }
 
 void IRAM_ATTR RadioController::ch5INTRR() {
     ch5End = micros();
-    ch5Value = (ch5End - ch4End - 1) < 1500 ? false : true;
+    ch5Value = (ch5End - ch4End - chDelay) < chDigitalThreshold ? false : true;
 }
 
 void IRAM_ATTR RadioController::ch6INTRR() {
     ch6End = micros();
-    ch6Value = (ch6End - ch5End - 1) < 1500 ? false : true;
+    ch6Value = (ch6End - ch5End - chDelay) < chDigitalThreshold ? false : true;
 }

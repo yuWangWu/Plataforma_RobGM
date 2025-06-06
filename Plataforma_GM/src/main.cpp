@@ -27,6 +27,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <stdio.h>
+
 #ifndef ARDUINO_H
 #define ARDUINO_H
   #include <Arduino.h>
@@ -35,11 +37,6 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef WIRE_H
 #define WIRE_H
   #include <Wire.h>
-#endif
-
-#ifndef ADAFRUIT_SSD1306_H
-#define ADARFUIT_SSD1306_H
-  #include <Adafruit_SSD1306.h>
 #endif
 
 #ifndef RADIO_CONTROLLER_H
@@ -80,22 +77,22 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 #define DXL_DIR         21
 #define DXL_ID          3
 
-// Heartbeat stuff
-// hw_timer_t *heartbeatTim = NULL;
-// volatile bool hbState{false};
-// void IRAM_ATTR hb_beat() {
-//   hbState = true;
-// }
-
-// I2C interface
-TwoWire i2cBus = TwoWire(0);
+// Check battery lvl timer (necessary to not overwhelm rbclw)
+hw_timer_t *battCheckerTim = NULL;
+volatile bool battFlag{false};
+void IRAM_ATTR checkBatt() {
+  battFlag = true;
+}
 
 RadioController rc;
-Panel frontPanel(i2cBus);
+Panel frontPanel;
 RoboClaw roboclaw1(&Serial2, 10000);
 RoboClaw roboclaw2(&Serial2, 10000);
 Dynamixel2Arduino servo(Serial1, DXL_DIR);
 
+ctlMode opMode;
+
+int battLvl{};
 float horizontal{}, vertical{}, servoRPM{};
 float motorLeftSide{}, motorRightSide{};
 
@@ -104,16 +101,16 @@ void setup() {
   pinMode(HB_LED1, OUTPUT);
   pinMode(HB_LED2, OUTPUT);
   digitalWrite(HB_LED1, 1);
-  // heartbeatTim = timerBegin(1, 80, true);
-  // timerAttachInterrupt(heartbeatTim, &hb_beat, true);
-  // timerAlarmWrite(heartbeatTim, 2000000, true);
-  // timerAlarmEnable(heartbeatTim);
+  battCheckerTim = timerBegin(1, 800, true);
+  timerAttachInterrupt(battCheckerTim, &checkBatt, true);
+  timerAlarmWrite(battCheckerTim, 1000000, true);
+  timerAlarmEnable(battCheckerTim);
 
   // Comunications
   Serial.begin(115200);
   Serial1.begin(DXL_BAUDRATE, SERIAL_8N1, DXL_RX, DXL_TX);
   Serial2.begin(RBCLW_BAUDRATE, SERIAL_8N1, RBCLW_RXPIN, RBCLW_TXPIN);
-  i2cBus.begin(I2C_SDA, I2C_SCK);
+  Wire.begin(I2C_SDA, I2C_SCK);
 
   Serial.println("Communications active");
 
@@ -132,13 +129,6 @@ void setup() {
 }
 
 void loop() {
-  //change
-  // Heartbeat update
-  // if (hbState) {
-  //   digitalWrite(HB_LED2, !digitalRead(HB_LED2));
-  //   digitalWrite(HB_LED1, !digitalRead(HB_LED2));
-  //   hbState = false;
-  // }
   digitalWrite(HB_LED1, !digitalRead(HB_LED1));
   digitalWrite(HB_LED2, !digitalRead(HB_LED1));
 
@@ -154,11 +144,17 @@ void loop() {
     frontPanel.resetButton1();
   }
 
+  opMode = rc.getCH4Value() ? RC_CONTROL : SERIAL_CONTROL;
+  if (battFlag) {
+    battLvl = roboclaw1.ReadMainBatteryVoltage(RBCLW1_DIR);
+    battFlag = false;
+  }
+
   // Front interface screen update
-  frontPanel.displayUpdate(rc.getCH4Value(), horizontal, vertical, servoRPM);
+  frontPanel.displayUpdate(opMode, std::to_string(horizontal), std::to_string(vertical), std::to_string(servoRPM), std::to_string(battLvl));
 
   // Movement
-  if (rc.getCH4Value()) {
+  if (opMode == RC_CONTROL) {
     horizontal = map(rc.getCH1Value(), 700, 1800, 100, -100);
     vertical = map(rc.getCH2Value(), 700, 1800, -100, 100);
     servoRPM = map(rc.getCH3Value(), 1100, 1900, 0, 30);
@@ -197,5 +193,6 @@ void loop() {
 // panel: autogestion de botones
 // cargador de bateria
 // condensadores roboclaw
+// cambiar iconos pantalla dinamicamente
 
 // referencia rosa

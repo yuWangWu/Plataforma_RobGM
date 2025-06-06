@@ -41,9 +41,13 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 
 class RadioController {
 private:
+    static const unsigned long chDelay = 1; //us
+    static const unsigned long chMaxOn = 3500; // us
+    static const unsigned long chDigitalThreshold = 1500; //us
+
+    unsigned long ch1Value, ch2Value, ch3Value;
+    bool ch4Value, ch5Value, ch6Value;
     unsigned long ch1Initial{}, ch1End{}, ch2End{}, ch3End{}, ch4End{}, ch5End{}, ch6End{};
-    unsigned long ch1Value{}, ch2Value{}, ch3Value{};
-    bool ch4Value{}, ch5Value{}, ch6Value{};
 
     void IRAM_ATTR ch1INTRR();
     void IRAM_ATTR ch2INTRR();
