@@ -51,7 +51,7 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef ROBOCLAW_H
 #define ROBOCLAW_H
-  #include "RoboClaw.h"
+  #include "RoboClone.h"
 #endif
 
 #ifndef DYNAMIXEL_H
@@ -86,13 +86,16 @@ void IRAM_ATTR checkBatt() {
 
 RadioController rc;
 Panel frontPanel;
-RoboClaw roboclaw1(&Serial2, 10000);
-RoboClaw roboclaw2(&Serial2, 10000);
+//RoboClaw roboclaw1(&Serial2, 10000);
+//RoboClaw roboclaw2(&Serial2, 10000);
+RoboClone roboclaw1(&Serial2, RBCLW1_DIR, 10000);
+RoboClone roboclaw2(&Serial2, RBCLW2_DIR, 10000);
 Dynamixel2Arduino servo(Serial1, DXL_DIR);
 
 ctlMode opMode;
 
 int battLvl{};
+uint32_t M1Enc{}, M2Enc{}, M3Enc{}, M4Enc{};
 float horizontal{}, vertical{}, servoRPM{};
 float motorLeftSide{}, motorRightSide{};
 
@@ -126,6 +129,8 @@ void setup() {
   servo.torqueOff(DXL_ID);
   servo.setOperatingMode(DXL_ID, OP_VELOCITY);
   servo.torqueOn(DXL_ID);
+
+  delay(5000);
 }
 
 void loop() {
@@ -145,13 +150,16 @@ void loop() {
   }
 
   opMode = rc.getCH4Value() ? RC_CONTROL : SERIAL_CONTROL;
+  roboclaw1.ReadEncoders(&M1Enc, &M2Enc);
+  roboclaw2.ReadEncoders(&M3Enc, &M4Enc);
   if (battFlag) {
-    battLvl = roboclaw1.ReadMainBatteryVoltage(RBCLW1_DIR);
+    battLvl = roboclaw1.ReadMainBatteryVoltage();
     battFlag = false;
   }
 
   // Front interface screen update
-  frontPanel.displayUpdate(opMode, std::to_string(horizontal), std::to_string(vertical), std::to_string(servoRPM), std::to_string(battLvl));
+  frontPanel.displayUpdate(opMode, std::to_string(horizontal), std::to_string(vertical), std::to_string(servoRPM), std::to_string(battLvl), 
+                            std::to_string(M1Enc), std::to_string(M2Enc), std::to_string(M3Enc), std::to_string(M4Enc));
 
   // Movement
   if (opMode == RC_CONTROL) {
@@ -163,27 +171,27 @@ void loop() {
     motorRightSide = (horizontal - vertical) / 200 * 127;
 
     if (motorLeftSide > 0) {
-      roboclaw1.ForwardM2(RBCLW1_DIR, motorLeftSide);
-      roboclaw2.ForwardM1(RBCLW2_DIR, motorLeftSide);
+      roboclaw1.ForwardM2(motorLeftSide);
+      roboclaw2.ForwardM1(motorLeftSide);
     } else {
-      roboclaw1.BackwardM2(RBCLW1_DIR, -motorLeftSide);
-      roboclaw2.BackwardM1(RBCLW2_DIR, -motorLeftSide);
+      roboclaw1.BackwardM2(-motorLeftSide);
+      roboclaw2.BackwardM1(-motorLeftSide);
     }
     if (motorRightSide > 0) {
-      roboclaw1.ForwardM1(RBCLW1_DIR, motorRightSide);
-      roboclaw2.ForwardM2(RBCLW2_DIR, motorRightSide);
+      roboclaw1.ForwardM1(motorRightSide);
+      roboclaw2.ForwardM2(motorRightSide);
     } else {
-      roboclaw1.BackwardM1(RBCLW1_DIR, -motorRightSide);
-      roboclaw2.BackwardM2(RBCLW2_DIR, -motorRightSide);
+      roboclaw1.BackwardM1(-motorRightSide);
+      roboclaw2.BackwardM2(-motorRightSide);
     }
 
     servo.setGoalVelocity(DXL_ID, servoRPM, UNIT_RPM);
   } 
   else {
-    roboclaw1.ForwardM1(RBCLW1_DIR, 0);
-    roboclaw1.ForwardM2(RBCLW1_DIR, 0);
-    roboclaw2.ForwardM1(RBCLW2_DIR, 0);
-    roboclaw2.ForwardM2(RBCLW2_DIR, 0);
+    roboclaw1.ForwardM1(0);
+    roboclaw1.ForwardM2(0);
+    roboclaw2.ForwardM1(0);
+    roboclaw2.ForwardM2(0);
     servo.setGoalVelocity(DXL_ID, 0, UNIT_RPM);
   }
 }

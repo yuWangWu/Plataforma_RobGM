@@ -74,7 +74,8 @@ void Panel::menuPrev() {
     Serial.println(currentMenu);
 }
 
-void Panel::displayUpdate(ctlMode opMode, std::string leftVel, std::string rightVel, std::string dxlRPM, std::string battLvl) {
+void Panel::displayUpdate(ctlMode opMode, std::string leftVel, std::string rightVel, std::string dxlRPM, std::string battLvl,
+                            std::string m1enc, std::string m2enc, std::string m3enc, std::string m4enc) {
     if (opMode == RC_CONTROL) {
         display.setDrawColor(0);
         display.drawBox(67, 0, 81, 13);
@@ -84,12 +85,7 @@ void Panel::displayUpdate(ctlMode opMode, std::string leftVel, std::string right
         display.drawBitmap(67, 0, 4, 13, usb_cable);
     }
 
-    // Placeholder for encoders
-    display.drawStr(0, 28, "17439");
-    display.drawStr(0, 63, "13854");
-    display.drawStr(98, 28, "04895");
-    display.drawStr(98, 63, "18495");
-
+    updateEncoders(m1enc, m2enc, m3enc, m4enc);
     updateBatt(battLvl);
     updateLV(leftVel);
     updateRV(rightVel);
@@ -97,6 +93,25 @@ void Panel::displayUpdate(ctlMode opMode, std::string leftVel, std::string right
 
     display.sendBuffer();
     display.refreshDisplay();
+}
+
+// full of magic numbers i know, i know... 
+void Panel::updateEncoders(std::string m1enc, std::string m2enc, std::string m3enc, std::string m4enc) {
+    display.setDrawColor(0);
+    display.drawBox(0, 15, 30, 13);
+    display.drawBox(0, 50, 30, 13);
+    display.drawBox(98, 15, 30, 13);
+    display.drawBox(98, 50, 30, 13);
+    display.setDrawColor(1);
+
+    m1enc.resize(6);
+    m2enc.resize(6);
+    m3enc.resize(6);
+    m4enc.resize(6);
+    display.drawStr(0, 28, m1enc.c_str());
+    display.drawStr(0, 63, m2enc.c_str());
+    display.drawStr(98, 28, m3enc.c_str());
+    display.drawStr(98, 63, m4enc.c_str());
 }
 
 void Panel::updateLV(std::string leftVel) {

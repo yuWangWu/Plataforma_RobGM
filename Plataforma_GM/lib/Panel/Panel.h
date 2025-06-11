@@ -54,6 +54,7 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 #define MENU_QUANTITY   3       // = NUMBER OF MENUS - 1
 
 enum ctlMode { SERIAL_CONTROL, RC_CONTROL };
+enum encoder { ENC1, ENC2, ENC3, ENC4 };
 
 class Panel {
 private:
@@ -69,7 +70,9 @@ public:
     // Display management
     void menuNext();
     void menuPrev();
-    void displayUpdate(ctlMode opMode, std::string leftVel, std::string rightVel, std::string dxlRPM, std::string battLvl);
+    void displayUpdate(ctlMode opMode, std::string leftVel, std::string rightVel, std::string dxlRPM, std::string battLvl, 
+                        std::string m1enc, std::string m2enc, std::string m3enc, std::string m4enc);
+    void updateEncoders(std::string m1enc, std::string m2enc, std::string m3enc, std::string m4enc);
     void updateLV(std::string leftVel);
     void updateRV(std::string rightVel);
     void updateDXL(std::string dxlVal);
