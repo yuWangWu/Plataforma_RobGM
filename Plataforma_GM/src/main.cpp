@@ -137,19 +137,8 @@ void loop() {
   digitalWrite(HB_LED1, !digitalRead(HB_LED1));
   digitalWrite(HB_LED2, !digitalRead(HB_LED1));
 
-  // Front interface button actions
-  if (frontPanel.getButton0()) { 
-    Serial.println("Event on Button 0");
-    frontPanel.menuPrev();
-    frontPanel.resetButton0();
-  }
-  if (frontPanel.getButton1()) { 
-    Serial.println("Event on Button 1");
-    frontPanel.menuNext();
-    frontPanel.resetButton1();
-  }
-
-  opMode = rc.getCH4Value() ? RC_CONTROL : SERIAL_CONTROL;
+  opMode = rc.getCH5Value() ? RC_CONTROL : SERIAL_CONTROL;
+  Serial.println(" ");
   roboclaw1.ReadEncoders(&M1Enc, &M2Enc);
   roboclaw2.ReadEncoders(&M3Enc, &M4Enc);
   if (battFlag) {

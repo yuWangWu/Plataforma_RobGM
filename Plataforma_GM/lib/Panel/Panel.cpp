@@ -31,7 +31,6 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Panel.h"
 
 void Panel::begin() {
-    buttons.begin();
     display.begin();
     display.firstPage();
 

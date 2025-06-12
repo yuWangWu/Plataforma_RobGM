@@ -39,11 +39,6 @@ OR OTHER DEALINGS IN THE SOFTWARE.
     #include <Wire.h>
 #endif
 
-#ifndef BUTTON_PAD_H
-#define BUTTON_PAD_H
-    #include "buttonPad.h"
-#endif
-
 #define I2C_SDA         16
 #define I2C_SCK         4
 
@@ -58,8 +53,6 @@ enum encoder { ENC1, ENC2, ENC3, ENC4 };
 
 class Panel {
 private:
-    buttonPad buttons;
-    // enum 
     uint8_t currentMenu, maxMenu;
     U8G2_SSD1306_128X64_NONAME_F_HW_I2C display;
 
@@ -77,17 +70,6 @@ public:
     void updateRV(std::string rightVel);
     void updateDXL(std::string dxlVal);
     void updateBatt(std::string battVal);
-
-    // Button management
-    void resetButton0() { buttons.setStateButton0(false); }
-    void resetButton1() { buttons.setStateButton1(false); }
-    void resetButton2() { buttons.setStateButton2(false); }
-    void resetButton3() { buttons.setStateButton3(false); }
-
-    bool getButton0() { return buttons.getStateButton0(); }
-    bool getButton1() { return buttons.getStateButton1(); }
-    bool getButton2() { return buttons.getStateButton2(); }
-    bool getButton3() { return buttons.getStateButton3(); }
 };
 
 const uint8_t img_signal[] = {

@@ -36,17 +36,26 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 #define CH2PIN  39
 #define CH3PIN  34
 #define CH4PIN  35
-#define CH5PIN  33
-#define CH6PIN  32
+#define CH5PIN  32
+#define CH6PIN  33
 
 class RadioController {
 private:
-    static const unsigned long chDelay = 1; //us
+    static const unsigned long chDelay = 1; // us
     static const unsigned long chMaxOn = 3500; // us
-    static const unsigned long chDigitalThreshold = 1500; //us
+    static const unsigned long chDigitalThreshold = 1500; // us
 
-    unsigned long ch1Value, ch2Value, ch3Value;
-    bool ch4Value, ch5Value, ch6Value;
+    static const unsigned long ch1Min = 1000;
+    static const unsigned long ch1Max = 2300;
+    static const unsigned long ch2Min = 800;
+    static const unsigned long ch2Max = 1900;
+    static const unsigned long ch3Min = 1000;
+    static const unsigned long ch3Max = 2100;
+    static const unsigned long ch4Min = 900;
+    static const unsigned long ch4Max = 2200;
+
+    unsigned long ch1Value{}, ch2Value{}, ch3Value{}, ch4Value{};
+    bool ch5Value{}, ch6Value{};
     unsigned long ch1Initial{}, ch1End{}, ch2End{}, ch3End{}, ch4End{}, ch5End{}, ch6End{};
 
     void IRAM_ATTR ch1INTRR();
@@ -63,7 +72,7 @@ public:
     unsigned long getCH1Value() { return ch1Value; }
     unsigned long getCH2Value() { return ch2Value; }
     unsigned long getCH3Value() { return ch3Value; }
-    bool getCH4Value() { return ch4Value; }
+    unsigned long getCH4Value() { return ch4Value; }
     bool getCH5Value() { return ch5Value; }
     bool getCH6Value() { return ch6Value; }
 };
